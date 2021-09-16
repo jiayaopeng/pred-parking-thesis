@@ -321,8 +321,8 @@ def cluster_train_evaluate_result(
         overfitting within train cluster)
         ----> from above, we wish to conclude if our method fails due to domain shift or due to overfitting
     """
-    #time_dependent_features = ['current_capacity', 'tempC', 'windspeedKmph', 'precipMM', 'hour', 'weekday', 'ongoing_trans']
-    time_dependent_features = ['current_capacity', 'tempC', 'windspeedKmph', 'precipMM', 'hour', 'weekday']
+    time_dependent_features = ['current_capacity', 'tempC', 'windspeedKmph', 'precipMM', 'hour', 'weekday', 'ongoing_trans']
+    #time_dependent_features = ['current_capacity', 'tempC', 'windspeedKmph', 'precipMM', 'hour', 'weekday']
     cat_features = ['hour', 'weekday', 'highway']
 
     # create cluster dictionary
@@ -467,6 +467,3 @@ def train_evaluate_all_approaches(cluster_cols: list, feature_col: list, target_
         result_feat_importance[str(cluster_col[0])] = feature_importance
 
     return result, result_matthew_size_corr, result_matthew_overfit, result_feat_importance
-
-# TODO: Location similarity: correlate location similarity and location distance (generate a nice picture for thesis)
-# TODO: normalization per cluster: if not work, normalize before
