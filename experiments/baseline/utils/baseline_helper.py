@@ -12,6 +12,7 @@ from sklearn.metrics import (
 )
 
 import experiments.baseline.utils.baseline_helper as bh
+import experiments.baseline.utils.baseline_models as bm
 
 
 def select_data(col: list, data: pd.DataFrame):
