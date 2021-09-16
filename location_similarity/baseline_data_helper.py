@@ -10,13 +10,17 @@ def compare_here_poi_in_radius(col_name, data_with_neighbourhood):
     Output:
         street_id of the streets which DOES NOT have consistent number of POIs
     """
-    ls_radius_suffix = ['25', '50', '100', '150', '250', '500']
+    ls_radius_suffix = ["25", "50", "100", "150", "250", "500"]
     ls_here_problematic_poi = {}
     for i, j in enumerate(ls_radius_suffix[:-1]):
-        ls_here_problematic_poi[f'{col_name}_{ls_radius_suffix[i]}_compare_{ls_radius_suffix[i + 1]}'] = \
-            data_with_neighbourhood[
-                (data_with_neighbourhood[f'{col_name}_here_{ls_radius_suffix[i]}']
-                 > data_with_neighbourhood[f'{col_name}_here_{ls_radius_suffix[i + 1]}'])].street_id.unique()
+        ls_here_problematic_poi[
+            f"{col_name}_{ls_radius_suffix[i]}_compare_{ls_radius_suffix[i + 1]}"
+        ] = data_with_neighbourhood[
+            (
+                data_with_neighbourhood[f"{col_name}_here_{ls_radius_suffix[i]}"]
+                > data_with_neighbourhood[f"{col_name}_here_{ls_radius_suffix[i + 1]}"]
+            )
+        ].street_id.unique()
 
     return ls_here_problematic_poi
 
@@ -48,8 +52,14 @@ def radius_count_replacement(dict_ls_street_id: dict, data: pd.DataFrame):
     """
     for poi_type, ls_street_ids in dict_ls_street_id.items():
         # locate the data
-        col_names = [f'{poi_type}_here_25', f'{poi_type}_here_50', f'{poi_type}_here_100', f'{poi_type}_here_150',
-                     f'{poi_type}_here_250', f'{poi_type}_here_500']
+        col_names = [
+            f"{poi_type}_here_25",
+            f"{poi_type}_here_50",
+            f"{poi_type}_here_100",
+            f"{poi_type}_here_150",
+            f"{poi_type}_here_250",
+            f"{poi_type}_here_500",
+        ]
         for street_id in ls_street_ids:
             located_data = data.loc[data.street_id == street_id, col_names]
 
@@ -58,8 +68,11 @@ def radius_count_replacement(dict_ls_street_id: dict, data: pd.DataFrame):
                 if index == 0:
                     break
                 data_min_current = located_data[col_names[index]]
-                if (located_data[col_names[index - 1]] > located_data[col_names[index]]).sum() == len(
-                        located_data):  # if the current column values are smaller than the previous index's column values
+                if (
+                    located_data[col_names[index - 1]] > located_data[col_names[index]]
+                ).sum() == len(
+                    located_data
+                ):  # if the current column values are smaller than the previous index's column values
                     located_data[col_names[index - 1]] = located_data[col_names[index]]
                 else:
                     data_min_current = located_data[col_names[index - 1]]
