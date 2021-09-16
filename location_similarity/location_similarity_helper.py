@@ -15,12 +15,13 @@ def fix_maxspeed(data: pd.DataFrame) -> pd.DataFrame:
     """
     The old seattle_train_here_data's maxspeed column is problematic, this func will only be used until the bug fixed
     """
-    if len(data[data['maxspeed'].str.contains("\['", na=False)]) != 0:
-        data.loc[:, 'maxspeed'] = data.loc[:, 'maxspeed'].str.strip("['")
+    if len(data[data["maxspeed"].str.contains("\['", na=False)]) != 0:
+        data.loc[:, "maxspeed"] = data.loc[:, "maxspeed"].str.strip("['")
         # assert the stripped result
-        assert len(data[data['maxspeed'].str.contains("\['", na=False)]) == 0
+        assert len(data[data["maxspeed"].str.contains("\['", na=False)]) == 0
         logging.info(
-            'old data with bugged maxspeed data is still used, string has been stripped')
+            "old data with bugged maxspeed data is still used, string has been stripped"
+        )
         return data
     else:
         return data
@@ -30,9 +31,9 @@ def preprocess_for_similarity_analysis(
     data: pd.DataFrame,
     selected_feature_names: list,
     options={
-        'impute_maxspeed': False,
-        'encode_highway': False,
-        'time_dependant_features': None,
+        "impute_maxspeed": False,
+        "encode_highway": False,
+        "time_dependant_features": None,
     },
 ) -> pd.DataFrame:
     """
@@ -55,9 +56,8 @@ def preprocess_for_similarity_analysis(
     """
 
     final_feature_cols = selected_feature_names
-    if options['time_dependant_features']:
-        final_feature_cols = selected_feature_names + \
-            options['time_dependant_features']
+    if options["time_dependant_features"]:
+        final_feature_cols = selected_feature_names + options["time_dependant_features"]
         # TODO: below part will be filled when in the second iteration we decide to use time-dependent features
         # and for now just a placeholder
         pass
@@ -65,24 +65,23 @@ def preprocess_for_similarity_analysis(
     features = data.loc[:, final_feature_cols]
 
     # prepare encoding data input
-    geometries = features.loc[:, ['geometry', 'street_id']]
-    features = features.set_index('street_id')
+    geometries = features.loc[:, ["geometry", "street_id"]]
+    features = features.set_index("street_id")
 
     # if we later decide to use max_speed feature,then we need to impute the missing values
-    if options['impute_maxspeed']:
+    if options["impute_maxspeed"]:
         # call the maxspeed imputation function
         imputed_features = impute_maxspeed(features)
-        X = imputed_features.drop(['availability', 'geometry'], axis=1)
+        X = imputed_features.drop(["availability", "geometry"], axis=1)
     else:
-        X = features.drop(['availability', 'geometry', 'maxspeed'], axis=1)
-    y = features[['availability']]
+        X = features.drop(["availability", "geometry", "maxspeed"], axis=1)
+    y = features[["availability"]]
 
     # call function encode the categorical variable highway
-    if options['encode_highway']:
-        similarity_features, _ = encode_categorical(
-            'target_encoder', ['highway'], X, y)
+    if options["encode_highway"]:
+        similarity_features, _ = encode_categorical("target_encoder", ["highway"], X, y)
     else:
-        similarity_features = X.drop(['highway'], axis=1)
+        similarity_features = X.drop(["highway"], axis=1)
 
     # TODO: check the same street different timestamps's highway column are encoded with same numeric value
 
@@ -96,43 +95,35 @@ def impute_maxspeed(data: pd.DataFrame) -> pd.DataFrame:
 
     # motorway_link, use maximum speed of the maxspeed
     data.loc[
-        (data['maxspeed'].isnull()) & (data['highway'] == 'motorway_link'),
-        'maxspeed'
-    ] = data['maxspeed'].astype(float).max()
+        (data["maxspeed"].isnull()) & (data["highway"] == "motorway_link"), "maxspeed"
+    ] = (data["maxspeed"].astype(float).max())
 
     # residential, use mode of the residential speed
-    mode = float(
-        data.loc[data['highway'] == 'residential']['maxspeed'].mode()[0]
-    )
+    mode = float(data.loc[data["highway"] == "residential"]["maxspeed"].mode()[0])
     data.loc[
-        (data['maxspeed'].isnull()) & (data['highway'] == 'residential'),
-        'maxspeed'
+        (data["maxspeed"].isnull()) & (data["highway"] == "residential"), "maxspeed"
     ] = mode
 
     # living street, use min of the maxspeed column
     data.loc[
-        (data['maxspeed'].isnull()) & (data['highway'] == 'living_street'),
-        'maxspeed'
-    ] = data['maxspeed'].astype(float).min()
+        (data["maxspeed"].isnull()) & (data["highway"] == "living_street"), "maxspeed"
+    ] = (data["maxspeed"].astype(float).min())
 
     return data
 
 
 def encode_categorical(
-    encoder: str,
-    col_encoded: list,
-    feature: pd.DataFrame,
-    target: pd.DataFrame
+    encoder: str, col_encoded: list, feature: pd.DataFrame, target: pd.DataFrame
 ) -> pd.DataFrame:
     """
     This function encode the categorical column with user defined method, a wrapper to use the categorical encoder package
     """
-    if encoder == 'target_encoder':
+    if encoder == "target_encoder":
         ce_target_encoder = ce.TargetEncoder(cols=col_encoded)
         similarity_features = ce_target_encoder.fit_transform(feature, target)
         return similarity_features, ce_target_encoder
 
-    elif encoder == 'onehot':
+    elif encoder == "onehot":
         onehot_encoder = ce.onehot.OneHotEncoder(cols=col_encoded)
         similarity_features = onehot_encoder.fit_transform(feature, target)
         return similarity_features, onehot_encoder
@@ -142,10 +133,7 @@ def encode_categorical(
         pass
 
 
-def street_pairwise_dist(
-        similarity_features,
-        metric: str
-) -> pd.DataFrame:
+def street_pairwise_dist(similarity_features, metric: str) -> pd.DataFrame:
     """
     This function takes the similarity features and calculate the pairwise distance
     Input:
@@ -157,7 +145,7 @@ def street_pairwise_dist(
     distance_matrix = pd.DataFrame(
         squareform(pdist(similarity_features, metric=metric)),
         columns=similarity_features.index,
-        index=similarity_features.index
+        index=similarity_features.index,
     )
     return distance_matrix
 
@@ -202,8 +190,10 @@ def distance_between_coordinates(coordinate1, coordinate2):
     delta_phi = math.radians(lat2 - lat1)
     delta_lambda = math.radians(lon2 - lon1)
 
-    a = math.sin(delta_phi / 2.0) ** 2 + math.cos(phi_1) * \
-        math.cos(phi_2) * math.sin(delta_lambda / 2.0) ** 2
+    a = (
+        math.sin(delta_phi / 2.0) ** 2
+        + math.cos(phi_1) * math.cos(phi_2) * math.sin(delta_lambda / 2.0) ** 2
+    )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     meters = R * c  # output distance in meters
@@ -219,14 +209,14 @@ def calculate_street_similarity_matrix(gdf: pd.DataFrame) -> object:
     result = {}
     for i in range(0, len(gdf)):
         street_to_compare = gdf.iloc[[i]]
-        str1 = street_to_compare.index.astype('str')[0]
+        str1 = street_to_compare.index.astype("str")[0]
         # For each street_id, get open an empty dict, the street to compare
         if str1 not in result:
             result[str1] = {}
 
         for j in range(0, len(gdf)):
             street = gdf.iloc[[j]]
-            str2 = street.index.astype('str')[0]
+            str2 = street.index.astype("str")[0]
             # open any dict, for street to be compared
             if str2 not in result:
                 result[str2] = {}
@@ -235,16 +225,15 @@ def calculate_street_similarity_matrix(gdf: pd.DataFrame) -> object:
                 continue
             # call the distance calculation function
             d = distance_between_coordinates(
-                street_to_compare.line_centroid.values,
-                street.line_centroid.values
+                street_to_compare.line_centroid.values, street.line_centroid.values
             )
             result[str1][str2] = d
             result[str2][str1] = d
     end_time = time.time()
     print("total time taken this loop: ", end_time - start_time)
     return result
-    
-    
+
+
 def create_area_combinations(areas: list):
     """
     input a list of areas in the city, return all the hold out one possible combinations for source and target areas
@@ -253,11 +242,11 @@ def create_area_combinations(areas: list):
     seattle_areas = areas
     all_area_combinations = []  # save all the area dictionary in a list
     for test_area in seattle_areas:
-        area_combination = {'Source': [], 'Target': []}
+        area_combination = {"Source": [], "Target": []}
         for area in seattle_areas:
             if area != test_area:
-                area_combination['Source'].append(area)
-        area_combination['Target'].append(test_area)
+                area_combination["Source"].append(area)
+        area_combination["Target"].append(test_area)
         all_area_combinations.append(area_combination)
 
     return all_area_combinations
@@ -269,18 +258,40 @@ def get_cluster_size_for_areas(area_input_data):
 
     for area_name in list(area_input_data.keys()):
         area_cluster_size[area_name] = {}
-        area_street_count = len(area_input_data[area_name]['Target'])
-        remaining_area_street_count = len(area_input_data[area_name]['Source'])
-        area_cluster_count = max(1, round(area_street_count / min_street_count_in_cluster))
-        remaining_area_cluster_count = round(remaining_area_street_count / min_street_count_in_cluster)
-        area_cluster_size[area_name]['Source'] = remaining_area_cluster_count
-        area_cluster_size[area_name]['Target'] = area_cluster_count
-        print(area_name, ': ', area_street_count, '/', remaining_area_street_count, ' -- ', area_cluster_count, '/',remaining_area_cluster_count)
+        area_street_count = len(area_input_data[area_name]["Target"])
+        remaining_area_street_count = len(area_input_data[area_name]["Source"])
+        area_cluster_count = max(
+            1, round(area_street_count / min_street_count_in_cluster)
+        )
+        remaining_area_cluster_count = round(
+            remaining_area_street_count / min_street_count_in_cluster
+        )
+        area_cluster_size[area_name]["Source"] = remaining_area_cluster_count
+        area_cluster_size[area_name]["Target"] = area_cluster_count
+        print(
+            area_name,
+            ": ",
+            area_street_count,
+            "/",
+            remaining_area_street_count,
+            " -- ",
+            area_cluster_count,
+            "/",
+            remaining_area_cluster_count,
+        )
 
     return area_cluster_size
 
 
-def create_cluster_label(area_input_data, df_pair_dist_max_normalized, area_name: str, base: str, algorithm: object, data: any, is_train: bool) -> any:
+def create_cluster_label(
+    area_input_data,
+    df_pair_dist_max_normalized,
+    area_name: str,
+    base: str,
+    algorithm: object,
+    data: any,
+    is_train: bool,
+) -> any:
     """
     This function takes the similarity metrics, the algorithm and if using the training data, and return the call of the clustring algo
     Input:
@@ -290,54 +301,47 @@ def create_cluster_label(area_input_data, df_pair_dist_max_normalized, area_name
     Output:
         by if else condition, call the clusteting algo
     """
-    with open('config/clustering_params.json') as json_file:
-    # the config file path is relative to the file using it
+    with open("config/clustering_params.json") as json_file:
+        # the config file path is relative to the file using it
         cluster_input = json.load(json_file)
 
     area_cluster_size = get_cluster_size_for_areas(area_input_data)
-    
-    
-    config = cluster_input[base][(
-        'train' if is_train else 'test')][algorithm]
 
-    n_cluster = area_cluster_size[area_name]['Source' if is_train else 'Target']
+    config = cluster_input[base][("train" if is_train else "test")][algorithm]
+
+    n_cluster = area_cluster_size[area_name]["Source" if is_train else "Target"]
 
     if n_cluster == 1:
         return np.full(len(data), -1)
 
-    if base == 'sim':
-        study_area_streets = data[['study_area']]
-        input_data = df_pair_dist_max_normalized\
-            .filter(items=study_area_streets.index)\
-            .filter(items=study_area_streets.index, axis=0)
+    if base == "sim":
+        study_area_streets = data[["study_area"]]
+        input_data = df_pair_dist_max_normalized.filter(
+            items=study_area_streets.index
+        ).filter(items=study_area_streets.index, axis=0)
     else:
-        study_area_street_coords = data[['lon', 'lat']]
+        study_area_street_coords = data[["lon", "lat"]]
         input_data = study_area_street_coords.to_numpy()
-        if algorithm == 'db_scan':
+        if algorithm == "db_scan":
             input_data = np.radians(input_data)
 
-    if algorithm == 'db_scan':
-        if base == 'sim':
+    if algorithm == "db_scan":
+        if base == "sim":
             return lsc.db_scan(
                 data=input_data,
-                min_samples=int(config['min_samples']),
-                eps=float(config['eps']),
-                algorithm=config['algorithm'],
-                metric=config['metric'],
+                min_samples=int(config["min_samples"]),
+                eps=float(config["eps"]),
+                algorithm=config["algorithm"],
+                metric=config["metric"],
             )[0]
-        elif base == 'gps':
+        elif base == "gps":
             return lsc.db_scan(
                 data=input_data,
-                min_samples=int(config['min_samples']),
-                eps=float(config['eps']) / km_per_radian, # for DB scan, when clustering GPS, we have to divide by the km per radian
+                min_samples=int(config["min_samples"]),
+                eps=float(config["eps"])
+                / km_per_radian,  # for DB scan, when clustering GPS, we have to divide by the km per radian
             )[0]
-    elif algorithm == 'kmeans':
-        return lsc.kmeans(
-            data=input_data,
-            n_clusters=n_cluster
-        )[0]
-    elif algorithm == 'agg_clustering':
-        return lsc.agg_clustering(
-            data=input_data,
-            n_clusters=n_cluster
-        )[0]
+    elif algorithm == "kmeans":
+        return lsc.kmeans(data=input_data, n_clusters=n_cluster)[0]
+    elif algorithm == "agg_clustering":
+        return lsc.agg_clustering(data=input_data, n_clusters=n_cluster)[0]
