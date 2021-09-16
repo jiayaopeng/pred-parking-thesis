@@ -8,7 +8,7 @@ import category_encoders as ce
 import math
 import json
 
-import location_similarity_cluster as lsc
+import experiments.location_similarity.utils.location_similarity_cluster as lsc
 
 
 def fix_maxspeed(data: pd.DataFrame) -> pd.DataFrame:

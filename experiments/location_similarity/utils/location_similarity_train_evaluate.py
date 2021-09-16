@@ -15,7 +15,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-import location_similarity_helper as lsh
+import experiments.location_similarity.utils.location_similarity_helper as lsh
 
 
 def create_cluster_dict(

@@ -11,7 +11,7 @@ from sklearn.metrics import (
     precision_score,
 )
 
-import baseline_models as bm
+import experiments.baseline.utils.baseline_helper as bh
 
 
 def select_data(col: list, data: pd.DataFrame):
