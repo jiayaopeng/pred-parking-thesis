@@ -31,7 +31,7 @@ def corr_area_size_matthew(df_mean, highest_val_mean):
     """
     # get number of data points per area
     dataset = pd.read_csv(
-        's3://bucket-vwfs-pred-park-global-model-serving-dev/input/open_data/seattle/train_data_with_trans_100_with_transaction.csv',
+        'train_data_with_trans_100_with_transaction.csv',
         index_col=0
     )
     dataset = dataset.groupby('study_area').filter(lambda x: len(x) > 250)
