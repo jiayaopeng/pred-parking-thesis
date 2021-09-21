@@ -15,7 +15,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-import experiments.location_similarity.utils.location_similarity_helper as lsh
+import utils.location_similarity_helper as lsh
 
 
 def create_cluster_dict(
@@ -185,7 +185,8 @@ def evaluate_result(
         cluster_df["highway"] = cluster_df["highway"].apply(str)
         # use cluster_test key to get its nearest model's cluster label, then use it locate the model in the model disctionary
         # for pred and y true, for each test cluster, concatenate their y_true and preds along the rows
-        pred = model_dict[mapping[cluster_test]].predict(cluster_df[feature_col])
+        pred = model_dict[mapping[cluster_test]
+                          ].predict(cluster_df[feature_col])
         preds_dict[cluster_test] = pred  # save result per cluster
         preds = np.concatenate([preds, pred], axis=0)
 
@@ -216,7 +217,8 @@ def evaluate_result(
 
     # zip the result and var name and convert it to dict
     score_ls = [auc, recall, precision, accuracy, f1, fbeta, matthews]
-    score_names = ["AUC", "Recall", "Precision", "Accuracy", "F1", "FBeta", "Matthews"]
+    score_names = ["AUC", "Recall", "Precision",
+                   "Accuracy", "F1", "FBeta", "Matthews"]
     zip_score_ls_names = zip(score_names, score_ls)
     score_dict = dict(zip_score_ls_names)
 
@@ -245,7 +247,8 @@ def evaluate_valid_result(
             cluster_df[feature_col]
         )
         # get the y_trues
-        y_trues_dict[cluster_train_no] = cluster_df[target_col].values.reshape(-1)
+        y_trues_dict[cluster_train_no] = cluster_df[target_col].values.reshape(
+            -1)
 
         # combine the above as one dictionary
         valid_matthews = {}
@@ -277,8 +280,10 @@ def create_cluster_dictionary(
     Output:
         train and test dictionary, where key is the cluster label, and value is the dataframe
     """
-    data_train = data_train.set_index(["street_id", "observation_interval_start"])
-    data_test = data_test.set_index(["street_id", "observation_interval_start"])
+    data_train = data_train.set_index(
+        ["street_id", "observation_interval_start"])
+    data_test = data_test.set_index(
+        ["street_id", "observation_interval_start"])
 
     cat_features = ["hour", "weekday", "highway"]
 
@@ -378,8 +383,8 @@ def cluster_train_evaluate_result(
         cluster_col, feature_col, target_col, data_train, data_test
     )
     # get the train-test cluster map(each test cluster, find its closest train cluster)
-    ## key: is the test cluster
-    ## value: is the cluster no. of the current test cluster's closest cluster in train/source data
+    # key: is the test cluster
+    # value: is the cluster no. of the current test cluster's closest cluster in train/source data
     distance_map = calculate_distance(
         train_clusters_dict,
         test_clusters_dict,
@@ -400,13 +405,14 @@ def cluster_train_evaluate_result(
             if tmp_train_cluster_no != train_cluster_no:
                 continue
             closest_clusters[train_cluster_no] = cluster_data
-            closest_train_cluster_data_sizes[train_cluster_no] = len(cluster_data)
+            closest_train_cluster_data_sizes[train_cluster_no] = len(
+                cluster_data)
             print(f"There are {len(cluster_data)} datapoint in the closest")
 
     ##############################
     ## Overfitting within Train ##
     ##############################
-    ## split the matched closest train cluster into train and valid(to valid if there is overfitting
+    # split the matched closest train cluster into train and valid(to valid if there is overfitting
     closest_clusters_train_80 = {}
     closest_clusters_val_20 = {}
     for train_cluster_no, train_cluster_df in closest_clusters.items():
@@ -489,7 +495,8 @@ def cluster_train_evaluate_result(
     for test_cluster_no, train_cluster_no in distance_map.items():
         train_val_info = matthew_train_val[train_cluster_no]
         train_test_info = matthew_train_test[test_cluster_no]
-        overfit_final_dict[test_cluster_no] = {**train_val_info, **train_test_info}
+        overfit_final_dict[test_cluster_no] = {
+            **train_val_info, **train_test_info}
     print(overfit_final_dict)
 
     return (
@@ -532,7 +539,8 @@ def train_evaluate_all_approaches(
             train_input = df_train_clusters[
                 (df_train_clusters.db_cluster_label_gps != -1)
             ]
-            test_input = df_test_clusters[(df_test_clusters.db_cluster_label_gps != -1)]
+            test_input = df_test_clusters[(
+                df_test_clusters.db_cluster_label_gps != -1)]
 
         (
             scores,

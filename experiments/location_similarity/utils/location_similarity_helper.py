@@ -8,7 +8,7 @@ import category_encoders as ce
 import math
 import json
 
-import experiments.location_similarity.utils.location_similarity_cluster as lsc
+import utils.location_similarity_cluster as lsc
 
 
 def fix_maxspeed(data: pd.DataFrame) -> pd.DataFrame:
@@ -57,7 +57,8 @@ def preprocess_for_similarity_analysis(
 
     final_feature_cols = selected_feature_names
     if options["time_dependant_features"]:
-        final_feature_cols = selected_feature_names + options["time_dependant_features"]
+        final_feature_cols = selected_feature_names + \
+            options["time_dependant_features"]
         # TODO: below part will be filled when in the second iteration we decide to use time-dependent features
         # and for now just a placeholder
         pass
@@ -79,7 +80,8 @@ def preprocess_for_similarity_analysis(
 
     # call function encode the categorical variable highway
     if options["encode_highway"]:
-        similarity_features, _ = encode_categorical("target_encoder", ["highway"], X, y)
+        similarity_features, _ = encode_categorical(
+            "target_encoder", ["highway"], X, y)
     else:
         similarity_features = X.drop(["highway"], axis=1)
 
@@ -95,18 +97,22 @@ def impute_maxspeed(data: pd.DataFrame) -> pd.DataFrame:
 
     # motorway_link, use maximum speed of the maxspeed
     data.loc[
-        (data["maxspeed"].isnull()) & (data["highway"] == "motorway_link"), "maxspeed"
+        (data["maxspeed"].isnull()) & (
+            data["highway"] == "motorway_link"), "maxspeed"
     ] = (data["maxspeed"].astype(float).max())
 
     # residential, use mode of the residential speed
-    mode = float(data.loc[data["highway"] == "residential"]["maxspeed"].mode()[0])
+    mode = float(data.loc[data["highway"] == "residential"]
+                 ["maxspeed"].mode()[0])
     data.loc[
-        (data["maxspeed"].isnull()) & (data["highway"] == "residential"), "maxspeed"
+        (data["maxspeed"].isnull()) & (
+            data["highway"] == "residential"), "maxspeed"
     ] = mode
 
     # living street, use min of the maxspeed column
     data.loc[
-        (data["maxspeed"].isnull()) & (data["highway"] == "living_street"), "maxspeed"
+        (data["maxspeed"].isnull()) & (
+            data["highway"] == "living_street"), "maxspeed"
     ] = (data["maxspeed"].astype(float).min())
 
     return data

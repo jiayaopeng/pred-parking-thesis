@@ -11,8 +11,8 @@ from sklearn.metrics import (
     precision_score,
 )
 
-import experiments.baseline.utils.baseline_helper as bh
-import experiments.baseline.utils.baseline_models as bm
+import utils.baseline_helper as bh
+import utils.baseline_models as bm
 
 
 def select_data(col: list, data: pd.DataFrame):
@@ -21,7 +21,8 @@ def select_data(col: list, data: pd.DataFrame):
     """
     sup_cols = ["street_id", "observation_interval_start"]
     aux_cols = ["study_area", "geometry"]
-    X = data.loc[:, col].set_index(sup_cols).drop(["geometry", "availability"], axis=1)
+    X = data.loc[:, col].set_index(sup_cols).drop(
+        ["geometry", "availability"], axis=1)
     y_columns = ["availability"] + sup_cols
     y = data.loc[:, y_columns].set_index(sup_cols)
     aux_columns = aux_cols + sup_cols
@@ -122,14 +123,15 @@ def train_all_data(
     Output:
         a panda dataframe stores the metric result of different algorithm and different area combinations
     """
-    ## create the train, val, test
-    X_train, y_train, X_valid, y_valid, X_test, y_test = create_train_val_test(X, y)
+    # create the train, val, test
+    X_train, y_train, X_valid, y_valid, X_test, y_test = create_train_val_test(
+        X, y)
 
-    ## normalize the numerical features
+    # normalize the numerical features
     X_train_scaled, X_valid_scaled, X_test_scaled = normalize_data(
         X_train=X_train, X_valid=X_valid, X_test=X_test
     )
-    ## For catboost create train_val, test
+    # For catboost create train_val, test
     (
         X_train_cat,
         y_train_cat,
@@ -139,21 +141,25 @@ def train_all_data(
         y_test_cat,
     ) = create_train_val_test(X_catboost, y)
 
-    ## train model and save evaluated result
-    lr_model, lr_preds = bm.logistic_regression(X_train_scaled, y_train, X_test_scaled)
+    # train model and save evaluated result
+    lr_model, lr_preds = bm.logistic_regression(
+        X_train_scaled, y_train, X_test_scaled)
     lr_result = evaluate_baseline(lr_preds, y_test, "Logistic Regression")
 
-    rf_model, rf_preds = bm.random_forest(X_train_scaled, y_train, X_test_scaled)
+    rf_model, rf_preds = bm.random_forest(
+        X_train_scaled, y_train, X_test_scaled)
     rf_result = evaluate_baseline(rf_preds, y_test, "Random Forest")
     # note catboost does not need scaling, therefore use the original without scalinf, and also input is original cat
     # features https://datascience.stackexchange.com/questions/77312/does-the-performance-of-gbm-methods-profit-from
     # -feature-scaling
-    cb_model, cb_preds = bm.catboost(X_train_cat, y_train_cat, cat_feat, X_test_cat)
+    cb_model, cb_preds = bm.catboost(
+        X_train_cat, y_train_cat, cat_feat, X_test_cat)
     cb_result = evaluate_baseline(cb_preds, y_test_cat, "Catboost")
 
     # result
     output_all_data = {**lr_result, **rf_result, **cb_result}
-    df_result_all_areas = pd.DataFrame.from_dict(output_all_data, orient="index")
+    df_result_all_areas = pd.DataFrame.from_dict(
+        output_all_data, orient="index")
     return df_result_all_areas
 
 
@@ -180,7 +186,8 @@ def train_different_areas(
     result_areas = {}
     for area_split in all_area_combinations:
         # create the source data and target data
-        X_source, X_target = create_source_target_data(area_split, X_different_areas)
+        X_source, X_target = create_source_target_data(
+            area_split, X_different_areas)
         # refactor below two lines, either merge split or put into the create source target data function
         y_source = y_different_areas.loc[X_source.index]
         y_target = y_different_areas.loc[X_target.index]
@@ -209,13 +216,15 @@ def train_different_areas(
         rf_model_areas, rf_preds_areas = bm.random_forest(
             X_source_areas, y_source, X_target_areas
         )
-        rf_result_areas = evaluate_baseline(rf_preds_areas, y_target, "Random Forest")
+        rf_result_areas = evaluate_baseline(
+            rf_preds_areas, y_target, "Random Forest")
 
         # catboost classifier, no scaling is needed
         cb_model_areas, cb_preds_areas = bm.catboost(
             X=X_source_cat, y=y_source_cat, cat_feat=cat_feat, X_test=X_target_cat
         )
-        cb_result_areas = evaluate_baseline(cb_preds_areas, y_target_cat, "Catboost")
+        cb_result_areas = evaluate_baseline(
+            cb_preds_areas, y_target_cat, "Catboost")
 
         # merge to one dict
         output = {**lr_result_areas, **rf_result_areas, **cb_result_areas}
@@ -262,10 +271,12 @@ def train_best_model(
             X=X_source_cat, y=y_source_cat, cat_feat=cat_feat, X_test=X_target_cat
         )
 
-        feature_importance = cb_model_areas.get_feature_importance(prettified=True)
+        feature_importance = cb_model_areas.get_feature_importance(
+            prettified=True)
         feat_importance[str(area_split)] = feature_importance
 
-        cb_result_areas = evaluate_baseline(cb_preds_areas, y_target_cat, "Catboost")
+        cb_result_areas = evaluate_baseline(
+            cb_preds_areas, y_target_cat, "Catboost")
 
         # merge to one dict
         output = cb_result_areas
