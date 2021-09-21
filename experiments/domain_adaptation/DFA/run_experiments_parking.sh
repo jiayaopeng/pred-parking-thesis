@@ -1,0 +1,1 @@
+python main.py  --batch-size 16 --hidden_dim 32 --max_epoch 200 --n_experiments 50 --area_cv 1 --source_only 0 --use_batchnorm 1

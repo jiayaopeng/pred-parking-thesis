@@ -1,0 +1,6 @@
+torch
+torchnet
+torchvision
+sklearn
+tensorboard
+category-encoders

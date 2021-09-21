@@ -1,1 +1,0 @@
-python train.py  --batch_size 16 --hidden_dim 32 --max_epoch 200 --n_experiments 50 --area_cv 1 --use_batchnorm 1

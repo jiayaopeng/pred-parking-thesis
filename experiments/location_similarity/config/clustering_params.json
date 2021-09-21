@@ -1,0 +1,70 @@
+{
+  "gps" :  {
+    "train" :  {
+      "db_scan": {
+        "data": "radian_train_street_coords",
+        "eps": 0.20,
+        "min_samples": 3
+      },
+      "kmeans": {
+        "data": "np_train_street_coords",
+        "n_clusters": 4
+      },
+      "agg_clustering": {
+        "data": "np_train_street_coords",
+        "n_clusters": 4
+      }
+    },
+    "test": {
+      "db_scan": {
+        "data": "radian_test_street_coords",
+        "eps": 0.05,
+        "min_samples": 3
+      },
+      "kmeans": {
+        "data": "np_test_street_coords",
+        "n_clusters": 2
+      },
+      "agg_clustering": {
+        "data": "np_test_street_coords",
+        "n_clusters": 2
+      }
+    }
+  },
+  "sim": {
+    "train" :  {
+      "db_scan": {
+        "data": "df_pair_dist_max_normalized_train",
+        "eps": 0.33,
+        "min_samples":6,
+        "algorithm": "auto",
+        "metric": "precomputed"
+      },
+      "kmeans": {
+        "data": "df_pair_dist_max_normalized_train",
+        "n_clusters": 4
+      },
+      "agg_clustering": {
+        "data": "df_pair_dist_max_normalized_train",
+        "n_clusters": 4
+      }
+    },
+    "test": {
+      "db_scan": {
+        "data": "df_pair_dist_max_normalized_test",
+        "eps": 0.27,
+        "min_samples": 4,
+        "algorithm": "auto",
+        "metric": "precomputed"
+      },
+      "kmeans": {
+        "data": "df_pair_dist_max_normalized_test",
+        "n_clusters": 3
+      },
+      "agg_clustering": {
+        "data": "df_pair_dist_max_normalized_test",
+        "n_clusters": 3
+      }
+    }
+  }
+}
